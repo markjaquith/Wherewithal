@@ -24,26 +24,21 @@ class ParserTest extends TestCase {
 	}
 
 	public function test_tokens_are_parsed() {
-		$config = new Config();
-		$config->addComparisons('<', '>');
+		$config = (new Config())
+			->addComparisons('<', '>')
+			->addColumn('foo')
+			->addColumn('baz');
 		$parser = new Parser($config);
 
 		$this->assertEquals([
-			'foo',
-			'<',
-			'0',
+			'foo < 0',
 			'and',
 			'(',
-			'bar',
-			'>',
-			'0',
+			'bar > 0',
 			'or',
-			'bar',
-			'/',
-			'baz',
-			'<',
-			'-22',
+			'foo/baz < -22',
 			')',
-		], $parser->tokenize(' foo < 0 and(   bar > 0 or bar/baz < -22   )  '));
+		], $parser->tokenize(' foo < 0 and(   bar > 0 or foo/baz < -22   )  '));
+
 	}
 }
