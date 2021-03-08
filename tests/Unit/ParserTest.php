@@ -14,4 +14,34 @@ class ParserTest extends TestCase {
 
 		$this->assertInstanceOf(StructureContract::class, $structure);
 	}
+
+	public function test_normalizing_queries() {
+		$config = new Config();
+		$config->addComparisons('<', '>');
+		$parser = new Parser($config);
+
+		$this->assertEquals('foo > 3 and (bar < 2) or (bar > 0)', $parser->normalizeQuery('foo > 3 and(bar < 2) or(bar > 0)'));
+	}
+
+	public function test_tokens_are_parsed() {
+		$config = new Config();
+		$config->addComparisons('<', '>');
+		$parser = new Parser($config);
+
+		$this->assertEquals([
+			'foo',
+			'<',
+			'0',
+			'and',
+			'(',
+			'bar',
+			'>',
+			'0',
+			'or',
+			'bar',
+			'<',
+			'-22',
+			')',
+		], $parser->tokenize(' foo < 0 and(   bar > 0 or bar < -22   )  '));
+	}
 }
