@@ -1,0 +1,14 @@
+{
+    "name": "markjaquith/wherewithal",
+    "description": "Given constraints, parses a string of conditions into a valid MySQL WHERE clause",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark Jaquith",
+            "email": "mark@jaquith.me"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
