@@ -25,6 +25,7 @@ class Parser implements ParserContract {
 
 		$pregDelimiter = '#';
 		$splits = [
+			preg_quote('/', $pregDelimiter),
 			preg_quote('(', $pregDelimiter),
 			preg_quote(')', $pregDelimiter),
 			' and ',

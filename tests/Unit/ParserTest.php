@@ -39,9 +39,11 @@ class ParserTest extends TestCase {
 			'0',
 			'or',
 			'bar',
+			'/',
+			'baz',
 			'<',
 			'-22',
 			')',
-		], $parser->tokenize(' foo < 0 and(   bar > 0 or bar < -22   )  '));
+		], $parser->tokenize(' foo < 0 and(   bar > 0 or bar/baz < -22   )  '));
 	}
 }
