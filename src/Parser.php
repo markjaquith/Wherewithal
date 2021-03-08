@@ -17,6 +17,6 @@ class Parser implements ParserContract {
 	}
 
 	public function parse(string $query): StructureContract {
-		return new Structure;
+		return new Structure([]);
 	}
 }
