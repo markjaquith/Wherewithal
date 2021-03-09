@@ -64,10 +64,20 @@ class Parser implements ParserContract {
 		// Sanity checks.
 
 		// Parentheses do not match.
-		$leftParen = count(array_filter($out, fn($token) => $token->isType(Token::GROUP_START)));
-		$rightParen = count(array_filter($out, fn($token) => $token->isType(Token::GROUP_END)));
+		$parenLevel = 0;
+		foreach($out as $token) {
+			if ($token->isType(Token::GROUP_START)) {
+				$parenLevel++;
+			} elseif ($token->isType(Token::GROUP_END)) {
+				$parenLevel--;
+			}
 
-		if ($leftParen !== $rightParen) {
+			if ($parenLevel < 0) {
+				throw new ParenthesesMismatchException;
+			}
+		}
+
+		if ($parenLevel !== 0) {
 			throw new ParenthesesMismatchException;
 		}
 

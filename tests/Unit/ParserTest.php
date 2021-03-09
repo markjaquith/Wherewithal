@@ -92,6 +92,11 @@ class ParserTest extends TestCase {
 		$this->parser->parse('foo < 0 and ( ( baz > 0 )');
 	}
 
+		public function test_throws_parentheses_mismatch_exception2() {
+		$this->expectException(ParenthesesMismatchException::class);
+		$this->parser->parse('foo < 0 and ( baz))(( > 0 )');
+	}
+
 	public function test_throws_adjacent_operator_exception() {
 		$this->expectException(AdjacentOperatorException::class);
 		$this->parser->parse('foo < < 0 and baz < 0');
