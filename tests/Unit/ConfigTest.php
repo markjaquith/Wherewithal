@@ -7,21 +7,21 @@ use MarkJaquith\Wherewithal\Contracts\{ParserContract, ConfigContract, Structure
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase {
-	public function test_config_can_add_comparisons() {
+	public function test_config_can_add_operators() {
 		$config = new Config();
-		$this->assertEmpty($config->getComparisons());
+		$this->assertEmpty($config->getOperators());
 
-		$config->addComparison('<');
-		$this->assertEquals(['<'], $config->getComparisons());
+		$config->addOperator('<');
+		$this->assertEquals(['<'], $config->getOperators());
 
-		$config->addComparison('<');
-		$this->assertEquals(['<'], $config->getComparisons());
+		$config->addOperator('<');
+		$this->assertEquals(['<'], $config->getOperators());
 
-		$config->addComparison('>');
-		$this->assertEquals(['<', '>'], $config->getComparisons());
+		$config->addOperator('>');
+		$this->assertEquals(['<', '>'], $config->getOperators());
 
-		$config->addComparisons('>=', '<=');
-		$this->assertEquals(['<', '>', '>=', '<='], $config->getComparisons());
+		$config->addOperators('>=', '<=');
+		$this->assertEquals(['<', '>', '>=', '<='], $config->getOperators());
 	}
 
 	public function test_config_can_add_columns() {

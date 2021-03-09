@@ -3,25 +3,25 @@
 namespace MarkJaquith\Wherewithal;
 
 class Config implements Contracts\ConfigContract {
-	private array $comparisons = [];
+	private array $operators = [];
 	private array $columns = [];
 
-	public function addComparison(string $comparison): self {
-		$this->comparisons[$comparison] = true;
+	public function addOperator(string $operator): self {
+		$this->operators[$operator] = true;
 
 		return $this;
 	}
 
-	public function addComparisons(string ...$comparisons): self {
-		foreach($comparisons as $comparison) {
-			$this->addComparison($comparison);
+	public function addOperators(string ...$operators): self {
+		foreach($operators as $operator) {
+			$this->addOperator($operator);
 		}
 
 		return $this;
 	}
 
-	public function getComparisons(): array {
-		return array_keys($this->comparisons);
+	public function getOperators(): array {
+		return array_keys($this->operators);
 	}
 
 	public function addColumn(string $column, string ...$aliases): self {
@@ -36,5 +36,13 @@ class Config implements Contracts\ConfigContract {
 
 	public function getColumns(): array {
 		return $this->columns;
+	}
+
+	public function getColumn(string $column): ?string {
+		return $this->getColumns()[$column] ?? null;
+	}
+
+	public function isOperator(string $operator): bool {
+		return isset($this->operators[$operator]);
 	}
 }

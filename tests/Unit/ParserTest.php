@@ -7,29 +7,28 @@ use MarkJaquith\Wherewithal\Contracts\{ParserContract, ConfigContract, Structure
 use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase {
+	private Parser $parser;
+
+	public function setUp(): void {
+		$config = (new Config())
+			->addOperators('<', '>', '/')
+			->addColumn('foo')
+			->addColumn('baz');
+		$this->parser = new Parser($config);
+	}
+
 	public function test_parser_yields_structure() {
-		$config = new Config();
-		$parser = new Parser($config);
-		$structure = $parser->parse('foo > 0');
+		$structure = $this->parser->parse('foo > 0');
 
 		$this->assertInstanceOf(StructureContract::class, $structure);
 	}
 
 	public function test_normalizing_queries() {
-		$config = new Config();
-		$config->addComparisons('<', '>');
-		$parser = new Parser($config);
 
-		$this->assertEquals('foo > 3 and (bar < 2) or (bar > 0)', $parser->normalizeQuery('foo > 3 and(bar < 2) or(bar > 0)'));
+		$this->assertEquals('foo > 3 and (bar < 2) or (bar > 0)', $this->parser->normalizeQuery('foo > 3 and(bar < 2) or(bar > 0)'));
 	}
 
 	public function test_tokens_are_parsed() {
-		$config = (new Config())
-			->addComparisons('<', '>')
-			->addColumn('foo')
-			->addColumn('baz');
-		$parser = new Parser($config);
-
 		$this->assertEquals([
 			'foo < 0',
 			'and',
@@ -38,7 +37,7 @@ class ParserTest extends TestCase {
 			'or',
 			'foo/baz < -22',
 			')',
-		], $parser->tokenize(' foo < 0 and(   bar > 0 or foo/baz < -22   )  '));
+		], $this->parser->splitConjunctions(' foo < 0 and(   bar > 0 or foo/baz < -22   )  '));
 
 	}
 
@@ -61,11 +60,26 @@ class ParserTest extends TestCase {
 	 * @param $input
 	 */
 	public function test_parses_conditions($left, $comparator, $right, $input) {
-		$config = (new Config())
-			->addComparisons('<', '>')
-			->addColumn('foo')
-			->addColumn('baz');
-		$parser = new Parser($config);
-		$this->assertEquals([$left, $comparator, $right], $parser->parseComparison($input));
+		$this->assertEquals([$left, $comparator, $right], $this->parser->parseCondition($input));
+	}
+
+	public function test_converts_to_tokens() {
+		$this->assertEquals([
+			['type' => Parser::TOKEN_COLUMN, 'value' => 'foo'],
+			['type' => Parser::TOKEN_OPERATOR, 'value' => '<'],
+			['type' => Parser::TOKEN_VALUE, 'value' => '0'],
+			['type' => Parser::TOKEN_AND],
+			['type' => Parser::TOKEN_GROUP_START],
+			['type' => Parser::TOKEN_VALUE, 'value' => 'bar'],
+			['type' => Parser::TOKEN_OPERATOR, 'value' => '>'],
+			['type' => Parser::TOKEN_VALUE, 'value' => '0'],
+			['type' => Parser::TOKEN_OR],
+			['type' => Parser::TOKEN_COLUMN, 'value' => 'foo'],
+			['type' => Parser::TOKEN_OPERATOR, 'value' => '/'],
+			['type' => Parser::TOKEN_COLUMN, 'value' => 'baz'],
+			['type' => Parser::TOKEN_OPERATOR, 'value' => '<'],
+			['type' => Parser::TOKEN_VALUE, 'value' => '-22'],
+			['type' => Parser::TOKEN_GROUP_END],
+		], $this->parser->parse('foo < 0 and ( bar > 0 or foo/baz < -22)')->toArray());
 	}
 }

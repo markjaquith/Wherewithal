@@ -12,4 +12,8 @@ class Structure implements Contracts\StructureContract {
 	public function toString(): string {
 		return var_export($this->structure);
 	}
+
+	public function toArray(): array {
+		return $this->structure;
+	}
 }
