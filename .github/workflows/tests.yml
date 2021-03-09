@@ -16,7 +16,7 @@ jobs:
         uses: php-actions/composer@v5
 
       - name: Install packages
-        run: composer install
+        uses: "ramsey/composer-install@v1"
 
       - name: Run tests
         run: composer test
