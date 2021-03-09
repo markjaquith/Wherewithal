@@ -1,6 +1,7 @@
 {
     "name": "markjaquith/wherewithal",
     "description": "Given constraints, parses a string of conditions into a valid MySQL WHERE clause",
+    "version": "0.1.0",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -20,5 +21,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
+    },
+    "require": {
+        "php": "^7.4"
     }
 }
