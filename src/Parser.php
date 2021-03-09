@@ -12,14 +12,8 @@ use MarkJaquith\Wherewithal\Exceptions\{AdjacentColumnException,
 
 class Parser implements ParserContract {
 	const PREG_DELIMITER = '#';
-	const TOKEN_GROUP_START = 0b00000001;
-	const TOKEN_GROUP_END = 0b00000010;
-	const TOKEN_AND = 0b00000100;
-	const TOKEN_OR = 0b00001000;
-	const TOKEN_OPERATOR = 0b00010000;
-	const TOKEN_COLUMN = 0b00100000;
-	const TOKEN_VALUE = 0b01000000;
 	private ConfigContract $config;
+	private TokenFactory $tokenFactory;
 
 	/**
 	 * Parser constructor.
@@ -28,6 +22,7 @@ class Parser implements ParserContract {
 	 */
 	public function __construct(ConfigContract $config) {
 		$this->config = $config;
+		$this->tokenFactory = new TokenFactory($config);
 	}
 
 	public function normalizeQuery(string $query): string {
@@ -49,29 +44,7 @@ class Parser implements ParserContract {
 	}
 
 	public function isConjunction(string $input): bool {
-		return in_array($input, ['(', ')', 'and', 'or', 'AND', 'OR']);
-	}
-
-	public function makeToken($value = '') {
-		$column = $this->config->getColumn(strtolower($value));
-		if ($column) {
-			return ['type' => self::TOKEN_COLUMN, 'value' => $column];
-		} elseif ($this->config->isOperator($value)) {
-			return ['type' => self::TOKEN_OPERATOR, 'value' => $value];
-		} elseif ($this->isConjunction($value)) {
-			switch (strtolower($value)) {
-				case '(':
-					return ['type' => self::TOKEN_GROUP_START];
-				case ')':
-					return ['type' => self::TOKEN_GROUP_END];
-				case 'and':
-					return ['type' => self::TOKEN_AND];
-				case 'or':
-					return ['type' => self::TOKEN_OR];
-			}
-		}
-
-		return ['type' => self::TOKEN_VALUE, 'value' => $value];
+		return $this->tokenFactory->isConjunction($input);
 	}
 
 	public function parse(string $query): StructureContract {
@@ -79,11 +52,11 @@ class Parser implements ParserContract {
 		$parts = $this->splitConjunctions($query);
 		foreach ($parts as $part) {
 			if ($this->isConjunction($part)) {
-				$out[] = $this->makeToken($part);
+				$out[] = $this->tokenFactory->make($part);
 			} else {
 				// It's a condition.
 				foreach ($this->parseCondition($part) as $conditionPart) {
-					$out[] = $this->makeToken($conditionPart);
+					$out[] = $this->tokenFactory->make($conditionPart);
 				}
 			}
 		}
@@ -91,30 +64,30 @@ class Parser implements ParserContract {
 		// Sanity checks.
 
 		// Parentheses do not match.
-		$leftParen = count(array_filter($out, fn($part) => $part['type'] === self::TOKEN_GROUP_START));
-		$rightParen = count(array_filter($out, fn($part) => $part['type'] === self::TOKEN_GROUP_END));
+		$leftParen = count(array_filter($out, fn($token) => $token->isType(Token::GROUP_START)));
+		$rightParen = count(array_filter($out, fn($token) => $token->isType(Token::GROUP_END)));
 
 		if ($leftParen !== $rightParen) {
 			throw new ParenthesesMismatchException;
 		}
 
 		array_reduce($out, function ($previous, $current) {
-			switch([$previous['type'], $current['type']]) {
-				case [self::TOKEN_GROUP_START, self::TOKEN_GROUP_END]:
+			switch([$previous->getType(), $current->getType()]) {
+				case [Token::GROUP_START, Token::GROUP_END]:
 					throw new EmptyGroupException;
-				case [0, self::TOKEN_GROUP_END]:
+				case [0, Token::GROUP_END]:
 					throw new ParenthesesMismatchException;
-				case [self::TOKEN_OPERATOR, self::TOKEN_OPERATOR]:
+				case [Token::OPERATOR, Token::OPERATOR]:
 					throw new AdjacentOperatorException;
-				case [self::TOKEN_COLUMN, self::TOKEN_COLUMN];
+				case [Token::COLUMN, Token::COLUMN];
 					throw new AdjacentColumnException;
-				case [self::TOKEN_VALUE, self::TOKEN_COLUMN]:
-				case [self::TOKEN_COLUMN, self::TOKEN_VALUE]:
+				case [Token::VALUE, Token::COLUMN]:
+				case [Token::COLUMN, Token::VALUE]:
 					throw new MissingOperatorException;
 			}
 
 			return $current;
-		}, ['type' => 0]);
+		}, new Token(Token::PATTERN_START));
 
 		return new Structure($out);
 	}

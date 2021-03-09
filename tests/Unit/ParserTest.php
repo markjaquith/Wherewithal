@@ -2,7 +2,7 @@
 
 namespace Unit;
 
-use MarkJaquith\Wherewithal\{Parser, Config};
+use MarkJaquith\Wherewithal\{Parser, Config, Token};
 use MarkJaquith\Wherewithal\Exceptions\{AdjacentOperatorException,
 	EmptyGroupException,
 	InvalidConjunctionPlacementException,
@@ -69,21 +69,21 @@ class ParserTest extends TestCase {
 
 	public function test_converts_to_tokens() {
 		$this->assertEquals([
-			['type' => Parser::TOKEN_COLUMN, 'value' => 'foo'],
-			['type' => Parser::TOKEN_OPERATOR, 'value' => '<'],
-			['type' => Parser::TOKEN_VALUE, 'value' => '0'],
-			['type' => Parser::TOKEN_AND],
-			['type' => Parser::TOKEN_GROUP_START],
-			['type' => Parser::TOKEN_VALUE, 'value' => 'bar'],
-			['type' => Parser::TOKEN_OPERATOR, 'value' => '>'],
-			['type' => Parser::TOKEN_VALUE, 'value' => '0'],
-			['type' => Parser::TOKEN_OR],
-			['type' => Parser::TOKEN_COLUMN, 'value' => 'foo'],
-			['type' => Parser::TOKEN_OPERATOR, 'value' => '/'],
-			['type' => Parser::TOKEN_COLUMN, 'value' => 'baz'],
-			['type' => Parser::TOKEN_OPERATOR, 'value' => '<'],
-			['type' => Parser::TOKEN_VALUE, 'value' => '-22'],
-			['type' => Parser::TOKEN_GROUP_END],
+			new Token(Token::COLUMN, 'foo'),
+			new Token(Token::OPERATOR, '<'),
+			new Token(Token::VALUE, '0'),
+			new Token(Token::AND),
+			new Token(Token::GROUP_START),
+			new Token(Token::VALUE, 'bar'),
+			new Token(Token::OPERATOR, '>'),
+			new Token(Token::VALUE, '0'),
+			new Token(Token::OR),
+			new Token(Token::COLUMN, 'foo'),
+			new Token(Token::OPERATOR, '/'),
+			new Token(Token::COLUMN, 'baz'),
+			new Token(Token::OPERATOR, '<'),
+			new Token(Token::VALUE, '-22'),
+			new Token(Token::GROUP_END),
 		], $this->parser->parse('foo < 0 and ( bar > 0 or foo/baz < -22)')->toArray());
 	}
 

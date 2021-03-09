@@ -10,7 +10,16 @@ class Structure implements Contracts\StructureContract {
 	}
 
 	public function toString(): string {
-		return var_export($this->structure);
+//		$out = '';
+//		foreach ($this->structure as $part) {
+//
+//		}
+	}
+
+	public function getBindings(): array {
+		$values = array_filter($this->structure, fn($part) => $part['type'] === Parser::TOKEN_VALUE);
+
+		return array_map(fn($part) => $part['value'], $values);
 	}
 
 	public function toArray(): array {
