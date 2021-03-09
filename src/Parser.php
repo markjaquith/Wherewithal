@@ -3,6 +3,12 @@
 namespace MarkJaquith\Wherewithal;
 
 use MarkJaquith\Wherewithal\Contracts\{ConfigContract, ParserContract, StructureContract};
+use MarkJaquith\Wherewithal\Exceptions\{AdjacentColumnException,
+	AdjacentOperatorException,
+	EmptyGroupException,
+	MissingOperatorException,
+	ParenthesesMismatchException,
+	InvalidConjunctionPlacementException};
 
 class Parser implements ParserContract {
 	const PREG_DELIMITER = '#';
@@ -81,6 +87,34 @@ class Parser implements ParserContract {
 				}
 			}
 		}
+
+		// Sanity checks.
+
+		// Parentheses do not match.
+		$leftParen = count(array_filter($out, fn($part) => $part['type'] === self::TOKEN_GROUP_START));
+		$rightParen = count(array_filter($out, fn($part) => $part['type'] === self::TOKEN_GROUP_END));
+
+		if ($leftParen !== $rightParen) {
+			throw new ParenthesesMismatchException;
+		}
+
+		array_reduce($out, function ($previous, $current) {
+			switch([$previous['type'], $current['type']]) {
+				case [self::TOKEN_GROUP_START, self::TOKEN_GROUP_END]:
+					throw new EmptyGroupException;
+				case [0, self::TOKEN_GROUP_END]:
+					throw new ParenthesesMismatchException;
+				case [self::TOKEN_OPERATOR, self::TOKEN_OPERATOR]:
+					throw new AdjacentOperatorException;
+				case [self::TOKEN_COLUMN, self::TOKEN_COLUMN];
+					throw new AdjacentColumnException;
+				case [self::TOKEN_VALUE, self::TOKEN_COLUMN]:
+				case [self::TOKEN_COLUMN, self::TOKEN_VALUE]:
+					throw new MissingOperatorException;
+			}
+
+			return $current;
+		}, ['type' => 0]);
 
 		return new Structure($out);
 	}

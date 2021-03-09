@@ -2,8 +2,12 @@
 
 namespace Unit;
 
-use MarkJaquith\Wherewithal\{Parser, Config, Structure};
-use MarkJaquith\Wherewithal\Contracts\{ParserContract, ConfigContract, StructureContract};
+use MarkJaquith\Wherewithal\{Parser, Config};
+use MarkJaquith\Wherewithal\Exceptions\{AdjacentOperatorException,
+	EmptyGroupException,
+	InvalidConjunctionPlacementException,
+	ParenthesesMismatchException};
+use MarkJaquith\Wherewithal\Contracts\StructureContract;
 use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase {
@@ -81,5 +85,20 @@ class ParserTest extends TestCase {
 			['type' => Parser::TOKEN_VALUE, 'value' => '-22'],
 			['type' => Parser::TOKEN_GROUP_END],
 		], $this->parser->parse('foo < 0 and ( bar > 0 or foo/baz < -22)')->toArray());
+	}
+
+	public function test_throws_parentheses_mismatch_exception() {
+		$this->expectException(ParenthesesMismatchException::class);
+		$this->parser->parse('foo < 0 and ( ( baz > 0 )');
+	}
+
+	public function test_throws_adjacent_operator_exception() {
+		$this->expectException(AdjacentOperatorException::class);
+		$this->parser->parse('foo < < 0 and baz < 0');
+	}
+
+	public function test_throws_empty_group_exception() {
+		$this->expectException(EmptyGroupException::class);
+		$this->parser->parse('foo < 0 and ()');
 	}
 }
