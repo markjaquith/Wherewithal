@@ -2,27 +2,35 @@
 
 namespace MarkJaquith\Wherewithal;
 
-class Structure implements Contracts\StructureContract {
-	private array $structure;
+use MarkJaquith\Wherewithal\Contracts\TokenContract;
 
-	public function __construct(array $structure) {
-		$this->structure = $structure;
+class Structure implements Contracts\StructureContract {
+	private array $tokens;
+
+	public function __construct(array $tokens) {
+		foreach ($tokens as $token) {
+			if (!$token instanceof TokenContract) {
+				throw new \InvalidArgumentException('Structure constructor only accepts an array of MarkJaquith\Wherewithal\Contracts\TokenContract');
+			}
+		}
+
+		$this->tokens = $tokens;
 	}
 
 	public function toString(): string {
 //		$out = '';
-//		foreach ($this->structure as $part) {
+//		foreach ($this->tokens as $part) {
 //
 //		}
 	}
 
 	public function getBindings(): array {
-		$values = array_filter($this->structure, fn($part) => $part['type'] === Parser::TOKEN_VALUE);
+		$values = array_filter($this->tokens, fn($part) => $part['type'] === Parser::TOKEN_VALUE);
 
 		return array_map(fn($part) => $part['value'], $values);
 	}
 
 	public function toArray(): array {
-		return $this->structure;
+		return $this->tokens;
 	}
 }

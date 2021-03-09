@@ -2,7 +2,9 @@
 
 namespace MarkJaquith\Wherewithal;
 
-class Token {
+use MarkJaquith\Wherewithal\Contracts\TokenContract;
+
+class Token implements TokenContract {
 	private ?string $value = null;
 	private int $type = -1;
 
