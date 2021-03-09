@@ -7,10 +7,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup PHP with PECL extension
+      - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
+
+      - name: Install Composer
         uses: php-actions/composer@v5
 
       - name: Install packages
