@@ -12,11 +12,14 @@ jobs:
         with:
           php-version: '7.4'
 
-      - name: Install Composer
-        uses: php-actions/composer@v5
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache/files
+          key: dependencies-composer-${{ hashFiles('composer.json') }}
 
-      - name: Install packages
-        uses: "ramsey/composer-install@v1"
+      - name: Install Composer packages
+        run: composer install --prefer-dist --no-interaction --no-suggest
 
       - name: Run tests
         run: composer test
