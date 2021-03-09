@@ -37,4 +37,22 @@ class Structure implements Contracts\StructureContract {
 	public function toArray(): array {
 		return $this->tokens;
 	}
+
+	public function mapColumns(callable $fn): self {
+		$out = [];
+
+		foreach ($this->tokens as $token) {
+			if ($token->isType(Token::COLUMN)) {
+				$newColumn = $fn($token->getValue());
+				if ($token->getValue() !== $newColumn) {
+					$out[] = new Token(Token::COLUMN, '(' . $newColumn . ')');
+				} else {
+					$out[] = $token;
+				}
+			} else {
+				$out[] = $token;
+			}
+		}
+		return new self($out);
+	}
 }
