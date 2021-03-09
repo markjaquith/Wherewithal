@@ -3,12 +3,12 @@
 namespace MarkJaquith\Wherewithal;
 
 use MarkJaquith\Wherewithal\Contracts\{ConfigContract, ParserContract, StructureContract};
-use MarkJaquith\Wherewithal\Exceptions\{AdjacentColumnException,
+use MarkJaquith\Wherewithal\Exceptions\{
+	AdjacentColumnException,
 	AdjacentOperatorException,
 	EmptyGroupException,
-	MissingOperatorException,
 	ParenthesesMismatchException,
-	InvalidConjunctionPlacementException};
+};
 
 class Parser implements ParserContract {
 	const PREG_DELIMITER = '#';
@@ -34,7 +34,7 @@ class Parser implements ParserContract {
 		$matches = preg_split(sprintf('%s(%s)%si', self::PREG_DELIMITER, join('|', $splits), self::PREG_DELIMITER), $input, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 		$matches = array_map('trim', $matches);
 
-		return array_filter($matches, fn($match) => strlen($match) > 0);
+		return array_values(array_filter($matches, fn($match) => strlen($match) > 0));
 	}
 
 	public function splitConjunctions(string $query): array {

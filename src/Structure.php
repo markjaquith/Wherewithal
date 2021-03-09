@@ -17,17 +17,21 @@ class Structure implements Contracts\StructureContract {
 		$this->tokens = $tokens;
 	}
 
+	public function __toString(): string {
+		$parts = array_map(fn($token) => $token->getSqlValue(), $this->tokens);
+		$parts = array_filter($parts, fn($part) => strlen($part) > 0);
+
+		return trim(join(' ', $parts));
+	}
+
 	public function toString(): string {
-//		$out = '';
-//		foreach ($this->tokens as $part) {
-//
-//		}
+		return $this->__toString();
 	}
 
 	public function getBindings(): array {
-		$values = array_filter($this->tokens, fn($part) => $part['type'] === Parser::TOKEN_VALUE);
+		$values = array_filter($this->tokens, fn($token) => $token->isType(Token::VALUE));
 
-		return array_map(fn($part) => $part['value'], $values);
+		return array_values(array_map(fn($token) => $token->getValue(), $values));
 	}
 
 	public function toArray(): array {
