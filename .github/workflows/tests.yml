@@ -1,25 +1,22 @@
 name: Tests
 on: push
+
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
         with:
-          php-version: '7.4'
+          path: /tmp/composer-cache
+          key: dependencies-composer-${{ runner.os }}-${{ hashFiles('composer.json') }}
 
-      - name: Cache dependencies
-        uses: actions/cache@v1
+      - uses: php-actions/composer@v5
         with:
-          path: ~/.composer/cache/files
-          key: dependencies-composer-${{ hashFiles('composer.json') }}
-
-      - name: Install Composer packages
-        run: composer install --prefer-dist --no-interaction --no-suggest
+          php_version: 7.4
+          version: 2
 
       - name: Run tests
         run: composer test
