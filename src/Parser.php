@@ -2,7 +2,7 @@
 
 namespace MarkJaquith\Wherewithal;
 
-use MarkJaquith\Wherewithal\Contracts\{ConfigContract, ParserContract, StructureContract};
+use MarkJaquith\Wherewithal\Contracts\{ConfigContract, ParserContract, StructureContract, TokenContract};
 use MarkJaquith\Wherewithal\Exceptions\{
 	AdjacentColumnException,
 	AdjacentOperatorException,
@@ -29,7 +29,17 @@ class Parser implements ParserContract {
 		return preg_replace('# (and|or)\(#i', ' $1 (', $query);
 	}
 
-	private function splitByDelimiters(string $input, array $delimiters) {
+	/**
+	 * Split a string by any of an array of delimiters.
+	 * 
+	 * The delimiters will also be in the resulting array.
+	 *
+	 * @param string $input
+	 * @param array $delimiters
+	 *
+	 * @return string[]
+	 */
+	private function splitByDelimiters(string $input, array $delimiters): array {
 		$splits = array_map(fn($delimiter) => preg_quote($delimiter, self::PREG_DELIMITER), $delimiters);
 		$matches = preg_split(sprintf('%s(%s)%si', self::PREG_DELIMITER, join('|', $splits), self::PREG_DELIMITER), $input, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 		$matches = array_map('trim', $matches);
@@ -81,7 +91,7 @@ class Parser implements ParserContract {
 			throw new ParenthesesMismatchException;
 		}
 
-		array_reduce($out, function ($previous, $current) {
+		array_reduce($out, function (TokenContract $previous, TokenContract $current): TokenContract {
 			switch([$previous->getType(), $current->getType()]) {
 				case [Token::GROUP_START, Token::GROUP_END]:
 					throw new EmptyGroupException;

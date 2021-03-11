@@ -18,8 +18,8 @@ class Structure implements Contracts\StructureContract {
 	}
 
 	public function __toString(): string {
-		$parts = array_map(fn($token) => $token->getSqlValue(), $this->tokens);
-		$parts = array_filter($parts, fn($part) => strlen($part) > 0);
+		$parts = array_map(fn(TokenContract $token): string => $token->getSqlValue(), $this->tokens);
+		$parts = array_filter($parts, fn(string $part): bool  => strlen($part) > 0);
 
 		return trim(join(' ', $parts));
 	}
@@ -28,10 +28,17 @@ class Structure implements Contracts\StructureContract {
 		return $this->__toString();
 	}
 
+	/**
+	 * Get the bindings for the SQL clause.
+	 * 
+	 * They will be listed in the order the appear in the query.
+	 *
+	 * @return string[]
+	 */
 	public function getBindings(): array {
-		$values = array_filter($this->tokens, fn($token) => $token->isType(Token::VALUE));
+		$values = array_filter($this->tokens, fn(TokenContract $token): bool => $token->isType(Token::VALUE));
 
-		return array_values(array_map(fn($token) => $token->getValue(), $values));
+		return array_values(array_map(fn(TokenContract $token): string => $token->getValue(), $values));
 	}
 
 	public function toArray(): array {
