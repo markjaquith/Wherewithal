@@ -4,14 +4,19 @@ namespace Unit;
 
 use MarkJaquith\Wherewithal\Token;
 use MarkJaquith\Wherewithal\Structure;
+use MarkJaquith\Wherewithal\TokenList;
+use MarkJaquith\Wherewithal\Contracts\{TokenContract, StructureContract};
 use PHPUnit\Framework\TestCase;
 
 class StructureTest extends TestCase {
-	private array $input;
-	private Structure $structure;
+	/**
+	 * @var TokenContract[]
+	 */
+	private array $tokens;
+	private StructureContract $structure;
 
 	public function setUp(): void {
-		$this->input = [
+		$this->tokens = [
 			new Token(Token::COLUMN, 'foo'),
 			new Token(Token::OPERATOR, '<'),
 			new Token(Token::VALUE, '0'),
@@ -28,10 +33,10 @@ class StructureTest extends TestCase {
 			new Token(Token::VALUE, '-22'),
 			new Token(Token::GROUP_END),
 		];
-		$this->structure = new Structure($this->input);
+		$this->structure = new Structure($this->tokens);
 }
 	public function test_structure_generates_query_and_bindings() {
-		$this->assertEquals($this->input, $this->structure->toArray());
+		$this->assertEquals($this->tokens, $this->structure->toArray());
 
 		$this->assertEquals('foo < ? and ( ? > ? or foo / baz < ? )', (string) $this->structure);
 		$this->assertEquals('foo < ? and ( ? > ? or foo / baz < ? )', $this->structure->toString());

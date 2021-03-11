@@ -2,7 +2,12 @@
 
 namespace MarkJaquith\Wherewithal;
 
-use MarkJaquith\Wherewithal\Contracts\{ConfigContract, ParserContract, StructureContract, TokenContract};
+use MarkJaquith\Wherewithal\Contracts\{
+	ConfigContract,
+	ParserContract,
+	StructureContract,
+	TokenContract,
+};
 use MarkJaquith\Wherewithal\Exceptions\{
 	AdjacentColumnException,
 	AdjacentOperatorException,
@@ -59,32 +64,39 @@ class Parser implements ParserContract {
 		return $this->splitByDelimiters($query, ['(', ')', ' and ', ' or ']);
 	}
 
+	/**
+	 * Parse a query into a Structure (a collection of tokens).
+	 *
+	 * @param string $query
+	 * @return StructureContract
+	 */
 	public function parse(string $query): StructureContract {
-		$tokens = [];
+		$tokens = new Structure;
+
 		$parts = $this->splitConjunctions($query);
 		foreach ($parts as $part) {
 			if ($this->tokenFactory->isConjunction($part)) {
-				$tokens[] = $this->tokenFactory->make($part);
+				$tokens->append($this->tokenFactory->make($part));
 			} else {
 				// It's a condition.
 				foreach ($this->parseCondition($part) as $conditionPart) {
-					$tokens[] = $this->tokenFactory->make($conditionPart);
+					$tokens->append($this->tokenFactory->make($conditionPart));
 				}
 			}
 		}
 
 		$this->scanForExceptions($tokens);
 
-		return new Structure($tokens);
+		return $tokens;
 	}
 
 	/**
 	 * Scans an array of tokens and maybe throws an exception.
 	 *
-	 * @param TokenContract[] $tokens
+	 * @param StructureContract $tokens
 	 * @return void
 	 */
-	private function scanForExceptions(array $tokens): void {
+	private function scanForExceptions(StructureContract $tokens): void {
 		$this->scanForParenthesesMismatch($tokens);
 		$this->scanForAdjacentTokenExceptions($tokens);
 	}
@@ -92,11 +104,11 @@ class Parser implements ParserContract {
 	/**
 	 * Scans an array of tokens for adjacent token issues.
 	 *
-	 * @param TokenContract[] $tokens
+	 * @param StructureContract $tokens
 	 * @return void
 	 */
-	private function scanForAdjacentTokenExceptions(array $tokens): void {
-		array_reduce($tokens, function (TokenContract $previous, TokenContract $current): TokenContract {
+	private function scanForAdjacentTokenExceptions(StructureContract $tokens): void {
+		array_reduce($tokens->toArray(), function (TokenContract $previous, TokenContract $current): TokenContract {
 			switch([$previous->getType(), $current->getType()]) {
 				case [Token::GROUP_START, Token::GROUP_END]:
 					throw new EmptyGroupException;
@@ -115,12 +127,13 @@ class Parser implements ParserContract {
 	/**
 	 * Scans an array of tokens for parenthetical issues.
 	 *
-	 * @param TokenContract[] $tokens
+	 * @param StructureContract $tokens
 	 * @return void
 	 */
-	private function scanForParenthesesMismatch(array $tokens): void {
+	private function scanForParenthesesMismatch(StructureContract $tokens): void {
 		$parenLevel = 0;
 		foreach($tokens as $token) {
+			assert($token instanceof TokenContract);
 			if ($token->isType(Token::GROUP_START)) {
 				$parenLevel++;
 			} elseif ($token->isType(Token::GROUP_END)) {

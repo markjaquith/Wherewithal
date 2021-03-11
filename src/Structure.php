@@ -2,7 +2,7 @@
 
 namespace MarkJaquith\Wherewithal;
 
-use MarkJaquith\Wherewithal\Contracts\TokenContract;
+use MarkJaquith\Wherewithal\Contracts\{TokenContract};
 
 class Structure implements Contracts\StructureContract {
 	/**
@@ -15,7 +15,7 @@ class Structure implements Contracts\StructureContract {
 	 *
 	 * @param TokenContract[] $tokens
 	 */
-	public function __construct(array $tokens) {
+	public function __construct(array $tokens = []) {
 		$this->tokens = $tokens;
 	}
 
@@ -28,6 +28,14 @@ class Structure implements Contracts\StructureContract {
 
 	public function toString(): string {
 		return $this->__toString();
+	}
+
+	public function append(TokenContract $token): void {
+		$this->tokens[] = $token;
+	}
+
+	public function getIterator(): \Iterator {
+		return new \ArrayIterator($this->tokens);
 	}
 
 	/**
@@ -43,25 +51,30 @@ class Structure implements Contracts\StructureContract {
 		return array_values(array_map(fn(TokenContract $token): string => $token->getValue(), $values));
 	}
 
+	/**
+	 * Get the tokens as an array.
+	 *
+	 * @return TokenContract[]
+	 */
 	public function toArray(): array {
 		return $this->tokens;
 	}
 
 	public function mapColumns(callable $fn): self {
-		$out = [];
+		$tokens = [];
 
 		foreach ($this->tokens as $token) {
 			if ($token->isType(Token::COLUMN)) {
 				$newColumn = (string) $fn($token->getValue());
 				if ($token->getValue() !== $newColumn) {
-					$out[] = new Token(Token::COLUMN, '(' . $newColumn . ')');
+					$tokens[] = new Token(Token::COLUMN, '(' . $newColumn . ')');
 				} else {
-					$out[] = $token;
+					$tokens[] = $token;
 				}
 			} else {
-				$out[] = $token;
+				$tokens[] = $token;
 			}
 		}
-		return new self($out);
+		return new self($tokens);
 	}
 }
