@@ -91,9 +91,6 @@ class Parser implements ParserContract {
 					throw new AdjacentOperatorException;
 				case [Token::COLUMN, Token::COLUMN];
 					throw new AdjacentColumnException;
-				case [Token::VALUE, Token::COLUMN]:
-				case [Token::COLUMN, Token::VALUE]:
-					throw new MissingOperatorException;
 			}
 
 			return $current;
