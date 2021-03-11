@@ -60,24 +60,67 @@ class Parser implements ParserContract {
 	}
 
 	public function parse(string $query): StructureContract {
-		$out = [];
+		$tokens = [];
 		$parts = $this->splitConjunctions($query);
 		foreach ($parts as $part) {
 			if ($this->tokenFactory->isConjunction($part)) {
-				$out[] = $this->tokenFactory->make($part);
+				$tokens[] = $this->tokenFactory->make($part);
 			} else {
 				// It's a condition.
 				foreach ($this->parseCondition($part) as $conditionPart) {
-					$out[] = $this->tokenFactory->make($conditionPart);
+					$tokens[] = $this->tokenFactory->make($conditionPart);
 				}
 			}
 		}
 
-		// Sanity checks.
+		$this->scanForExceptions($tokens);
 
-		// Parentheses do not match.
+		return new Structure($tokens);
+	}
+
+	/**
+	 * Scans an array of tokens and maybe throws an exception.
+	 *
+	 * @param TokenContract[] $tokens
+	 * @return void
+	 */
+	private function scanForExceptions(array $tokens): void {
+		$this->scanForParenthesesMismatch($tokens);
+		$this->scanForAdjacentTokenExceptions($tokens);
+	}
+
+	/**
+	 * Scans an array of tokens for adjacent token issues.
+	 *
+	 * @param TokenContract[] $tokens
+	 * @return void
+	 */
+	private function scanForAdjacentTokenExceptions(array $tokens): void {
+		array_reduce($tokens, function (TokenContract $previous, TokenContract $current): TokenContract {
+			switch([$previous->getType(), $current->getType()]) {
+				case [Token::GROUP_START, Token::GROUP_END]:
+					throw new EmptyGroupException;
+				case [0, Token::GROUP_END]:
+					throw new ParenthesesMismatchException;
+				case [Token::OPERATOR, Token::OPERATOR]:
+					throw new AdjacentOperatorException;
+				case [Token::COLUMN, Token::COLUMN];
+					throw new AdjacentColumnException;
+			}
+
+			return $current;
+		}, new Token(Token::PATTERN_START));
+	}
+
+	/**
+	 * Scans an array of tokens for parenthetical issues.
+	 *
+	 * @param TokenContract[] $token
+	 * @return void
+	 */
+	private function scanForParenthesesMismatch(array $tokens): void {
 		$parenLevel = 0;
-		foreach($out as $token) {
+		foreach($tokens as $token) {
 			if ($token->isType(Token::GROUP_START)) {
 				$parenLevel++;
 			} elseif ($token->isType(Token::GROUP_END)) {
@@ -92,23 +135,6 @@ class Parser implements ParserContract {
 		if ($parenLevel !== 0) {
 			throw new ParenthesesMismatchException;
 		}
-
-		array_reduce($out, function (TokenContract $previous, TokenContract $current): TokenContract {
-			switch([$previous->getType(), $current->getType()]) {
-				case [Token::GROUP_START, Token::GROUP_END]:
-					throw new EmptyGroupException;
-				case [0, Token::GROUP_END]:
-					throw new ParenthesesMismatchException;
-				case [Token::OPERATOR, Token::OPERATOR]:
-					throw new AdjacentOperatorException;
-				case [Token::COLUMN, Token::COLUMN];
-					throw new AdjacentColumnException;
-			}
-
-			return $current;
-		}, new Token(Token::PATTERN_START));
-
-		return new Structure($out);
 	}
 
 	/**
