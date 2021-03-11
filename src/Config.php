@@ -4,6 +4,9 @@ namespace MarkJaquith\Wherewithal;
 
 class Config implements Contracts\ConfigContract {
 	private array $operators = [];
+	/**
+	 * @var string[]
+	 */
 	private array $columns = [];
 
 	public function addOperator(string $operator): self {
@@ -34,6 +37,11 @@ class Config implements Contracts\ConfigContract {
 		return $this;
 	}
 
+	/**
+	 * Return the defined columns.
+	 *
+	 * @return string[]
+	 */
 	public function getColumns(): array {
 		return $this->columns;
 	}

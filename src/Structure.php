@@ -5,15 +5,17 @@ namespace MarkJaquith\Wherewithal;
 use MarkJaquith\Wherewithal\Contracts\TokenContract;
 
 class Structure implements Contracts\StructureContract {
+	/**
+	 * @var TokenContract[]
+	 */
 	private array $tokens;
 
+	/**
+	 * Structure constructor.
+	 *
+	 * @param TokenContract[] $tokens
+	 */
 	public function __construct(array $tokens) {
-		foreach ($tokens as $token) {
-			if (!$token instanceof TokenContract) {
-				throw new \InvalidArgumentException('Structure constructor only accepts an array of MarkJaquith\Wherewithal\Contracts\TokenContract');
-			}
-		}
-
 		$this->tokens = $tokens;
 	}
 
@@ -50,7 +52,7 @@ class Structure implements Contracts\StructureContract {
 
 		foreach ($this->tokens as $token) {
 			if ($token->isType(Token::COLUMN)) {
-				$newColumn = $fn($token->getValue());
+				$newColumn = (string) $fn($token->getValue());
 				if ($token->getValue() !== $newColumn) {
 					$out[] = new Token(Token::COLUMN, '(' . $newColumn . ')');
 				} else {

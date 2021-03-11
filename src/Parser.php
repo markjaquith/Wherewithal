@@ -40,28 +40,30 @@ class Parser implements ParserContract {
 	 * @return string[]
 	 */
 	private function splitByDelimiters(string $input, array $delimiters): array {
-		$splits = array_map(fn($delimiter) => preg_quote($delimiter, self::PREG_DELIMITER), $delimiters);
+		$splits = array_map(fn(string $delimiter): string => preg_quote($delimiter, self::PREG_DELIMITER), $delimiters);
 		$matches = preg_split(sprintf('%s(%s)%si', self::PREG_DELIMITER, join('|', $splits), self::PREG_DELIMITER), $input, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 		$matches = array_map('trim', $matches);
 
 		return array_values(array_filter($matches, fn($match) => strlen($match) > 0));
 	}
 
+	/**
+	 * Splits the query into chunks containing conjunctions or conditions.
+	 *
+	 * @param string $query
+	 * @return string[]
+	 */
 	public function splitConjunctions(string $query): array {
 		$query = $this->normalizeQuery($query);
 
 		return $this->splitByDelimiters($query, ['(', ')', ' and ', ' or ']);
 	}
 
-	public function isConjunction(string $input): bool {
-		return $this->tokenFactory->isConjunction($input);
-	}
-
 	public function parse(string $query): StructureContract {
 		$out = [];
 		$parts = $this->splitConjunctions($query);
 		foreach ($parts as $part) {
-			if ($this->isConjunction($part)) {
+			if ($this->tokenFactory->isConjunction($part)) {
 				$out[] = $this->tokenFactory->make($part);
 			} else {
 				// It's a condition.
@@ -109,6 +111,12 @@ class Parser implements ParserContract {
 		return new Structure($out);
 	}
 
+	/**
+	 * Splits a condition into its values, columns, and operators.
+	 *
+	 * @param string $input
+	 * @return string[]
+	 */
 	public function parseCondition(string $input): array {
 		return $this->splitByDelimiters($input, $this->config->getOperators());
 	}
