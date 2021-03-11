@@ -5,7 +5,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Cache Composer dependencies
         uses: actions/cache@v2
@@ -13,13 +14,14 @@ jobs:
           path: /tmp/composer-cache
           key: dependencies-composer-${{ runner.os }}-${{ hashFiles('composer.json') }}
 
-      - uses: php-actions/composer@v5
+      - name: Install Composer packages
+        uses: php-actions/composer@v5
         with:
           php_version: 7.4
           version: 2
 
-      - name: Run tests
+      - name: Run PHPUnit tests
         run: composer test
 
-      - name: Psalm
+      - name: Run Psalm
         uses: docker://vimeo/psalm-github-actions
