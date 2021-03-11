@@ -39,7 +39,7 @@ class Token implements TokenContract {
 			case self::VALUE:
 			case self::COLUMN:
 			case self::OPERATOR:
-				return $this->value;
+				return $this->value ?? '';
 			default:
 				return self::VALUE_MAP[$this->getType()] ?? '';
 		}
