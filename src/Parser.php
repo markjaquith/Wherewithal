@@ -115,7 +115,7 @@ class Parser implements ParserContract {
 	/**
 	 * Scans an array of tokens for parenthetical issues.
 	 *
-	 * @param TokenContract[] $token
+	 * @param TokenContract[] $tokens
 	 * @return void
 	 */
 	private function scanForParenthesesMismatch(array $tokens): void {
