@@ -20,3 +20,6 @@ jobs:
 
       - name: Run tests
         run: composer test
+
+      - name: Psalm
+        uses: docker://vimeo/psalm-github-actions
