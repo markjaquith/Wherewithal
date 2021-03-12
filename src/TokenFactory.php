@@ -5,9 +5,6 @@ namespace MarkJaquith\Wherewithal;
 use MarkJaquith\Wherewithal\Contracts\ConfigContract;
 
 class TokenFactory {
-	/**
-	 * @var ConfigContract
-	 */
 	private ConfigContract $config;
 
 	const CONJUNCTIONS = [

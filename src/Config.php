@@ -4,6 +4,7 @@ namespace MarkJaquith\Wherewithal;
 
 class Config implements Contracts\ConfigContract {
 	private array $operators = [];
+
 	/**
 	 * @var string[]
 	 */
@@ -38,8 +39,6 @@ class Config implements Contracts\ConfigContract {
 	}
 
 	/**
-	 * Return the defined columns.
-	 *
 	 * @return string[]
 	 */
 	public function getColumns(): array {
@@ -50,7 +49,7 @@ class Config implements Contracts\ConfigContract {
 		return $this->getColumns()[$column] ?? null;
 	}
 
-	public function isOperator(string $operator): bool {
-		return isset($this->operators[$operator]);
+	public function isOperator(string $text): bool {
+		return isset($this->operators[$text]);
 	}
 }

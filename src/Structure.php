@@ -11,8 +11,6 @@ class Structure implements Contracts\StructureContract {
 	private array $tokens;
 
 	/**
-	 * Structure constructor.
-	 *
 	 * @param TokenContract[] $tokens
 	 */
 	public function __construct(array $tokens = []) {
@@ -52,8 +50,6 @@ class Structure implements Contracts\StructureContract {
 	}
 
 	/**
-	 * Get the tokens as an array.
-	 *
 	 * @return TokenContract[]
 	 */
 	public function toArray(): array {

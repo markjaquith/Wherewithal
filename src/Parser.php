@@ -21,8 +21,6 @@ class Parser implements ParserContract {
 	private TokenFactory $tokenFactory;
 
 	/**
-	 * Parser constructor.
-	 *
 	 * @param ConfigContract $config
 	 */
 	public function __construct(ConfigContract $config) {
@@ -94,7 +92,11 @@ class Parser implements ParserContract {
 	 * Scans an array of tokens and maybe throws an exception.
 	 *
 	 * @param StructureContract $tokens
-	 * @return void
+	 *
+	 * @throws AdjacentColumnException
+	 * @throws AdjacentOperatorException
+	 * @throws EmptyGroupException
+	 * @throws ParenthesesMismatchException
 	 */
 	private function scanForExceptions(StructureContract $tokens): void {
 		$this->scanForParenthesesMismatch($tokens);
@@ -105,7 +107,11 @@ class Parser implements ParserContract {
 	 * Scans an array of tokens for adjacent token issues.
 	 *
 	 * @param StructureContract $tokens
-	 * @return void
+	 *
+	 * @throws AdjacentColumnException
+	 * @throws AdjacentOperatorException
+	 * @throws EmptyGroupException
+	 * @throws ParenthesesMismatchException
 	 */
 	private function scanForAdjacentTokenExceptions(StructureContract $tokens): void {
 		array_reduce($tokens->toArray(), function (TokenContract $previous, TokenContract $current): TokenContract {
@@ -128,7 +134,8 @@ class Parser implements ParserContract {
 	 * Scans an array of tokens for parenthetical issues.
 	 *
 	 * @param StructureContract $tokens
-	 * @return void
+	 *
+	 * @throws ParenthesesMismatchException
 	 */
 	private function scanForParenthesesMismatch(StructureContract $tokens): void {
 		$parenLevel = 0;
